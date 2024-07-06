@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "compiler.h"
-struct compile_process *compiler_process_create(const char* file_name, const char* out_file_name, int flags)
+struct compile_process *compile_process_create(const char* file_name, const char* out_file_name, int flags)
 {
 	FILE* file = fopen(file_name, "r");
 	if (!file)
