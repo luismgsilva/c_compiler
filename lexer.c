@@ -9,6 +9,18 @@ peekc()
     return lex_process->function->peek_char(lex_process);
 }
 
+static char
+nextc ()
+{
+    char c = lex_process->function->next_char(lex_process);
+    lex_process->pos.col +=1;
+    if (c == '\n')
+    {
+        lex_process->pos.line += 1;
+        lex_process->pos.col = 1;
+    }
+}
+
 static void
 pushc (char c)
 {
