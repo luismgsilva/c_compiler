@@ -3,6 +3,12 @@
 
 static struct lex_process *lex_process;
 
+static char
+peekc()
+{
+    return lex_process->function->peek_char(lex_process);
+}
+
 struct token
 *read_next_token()
 {
