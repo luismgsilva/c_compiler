@@ -69,7 +69,7 @@ struct token
 struct lex_process;
 typedef char (*LEX_PROCESS_NEXT_CHAR)(struct lex_process *process);
 typedef char (*LEX_PROCESS_PEEK_CHAR)(struct lex_process *process);
-typedef char (*LEX_PROCESS_PUSH_CHAR)(struct lex_process *process, char c);
+typedef void (*LEX_PROCESS_PUSH_CHAR)(struct lex_process *process, char c);
 struct lex_process_functions
 {
 	LEX_PROCESS_NEXT_CHAR next_char;
