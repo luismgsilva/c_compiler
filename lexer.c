@@ -2,6 +2,7 @@
 #include <string.h>
 #include "helpers/vector.h"
 #include "helpers/buffer.h"
+#include <assert.h>
 
 #define LEX_GETC_IF(buffer, c, exp) 	\
     for (c =peekc(); exp; c = peekc(c))	\
@@ -108,6 +109,38 @@ struct token
 }
 
 struct token
+*token_make_string (char start_delim, char end_delim)
+{
+    /*
+     * What is a start_delim and end_delim?
+     * In a "Hello World" string, the start_delim is
+     * the first double quote '"' and the end_delim is
+     * the second double quote '""
+     */
+
+    struct buffer *buf = buffer_create();
+    assert(nextc() == start_delim);
+    char c = nextc();
+    for (; c != end_delim && c != EOF; c = nextc())
+    {
+        if (c == '\\')
+        {
+            /*
+             * TODO: Handle backspace character
+             * "Hello World\n" <- "\"
+             */
+            continue;
+        }
+
+        buffer_write(buf, c);
+    }
+
+    /* Write NULL terminator to the string (0xx0) */
+    buffer_write(buf, 0x00);
+    return token_create(&(struct token){TOKEN_TYPE_STRING,.sval=buffer_ptr(buf)});
+}
+
+struct token
 *read_next_token()
 {
     struct token *token = NULL;
@@ -116,6 +149,10 @@ struct token
     {
         NUMERIC_CASE:
             token = token_make_number();
+            break;
+
+        case '"':
+            token = token_make_string('"', '"');
             break;
 
         /* Ignore whitespaces */
