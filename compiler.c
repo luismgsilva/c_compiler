@@ -15,6 +15,12 @@ compile_file (const char* file_name, const char* out_file_name, int flags)
 
 	/* Preform lexical analysis */
 	struct lex_process *lex_process = lex_process_create(process, &compiler_lex_functions, NULL);
+	if (!lex_process)
+		return COMPILER_FAILED_WITH_ERRORS;
+
+	if (lex(lex_process) != LEXICAL_ANALYSIS_ALL_OK)
+		return COMPILER_FAILED_WITH_ERRORS;
+
 	/* Preform parsing */
 
 	/* Preform code generation */

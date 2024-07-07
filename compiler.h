@@ -16,6 +16,12 @@ struct pos
 	const char filename;
 };
 
+enum
+{
+	LEXICAL_ANALYSIS_ALL_OK,
+	LEXICAL_ANALYSIS_INPUT_ERROR
+};
+
 /* Token Types */
 enum
 {
@@ -133,4 +139,6 @@ struct lex_process *lex_process_create (struct compile_process *compiler, struct
 void lex_process_free (struct lex_process *process);
 void *lex_process_private (struct lex_process *process);
 struct vector *lex_process_tokens (struct lex_process *process);
+int lex (struct lex_process *process);
+
 #endif
