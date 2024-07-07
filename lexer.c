@@ -1,6 +1,13 @@
 #include "compiler.h"
 #include "helpers/vector.h"
 
+#define LEX_GETC_IF(buffer, c, exp) 	\
+    for (c =peekc(); exp; c = peekc(c))	\
+    {					\
+        buffer_write(buffer, c); 	\
+        nextc();			\
+    }
+
 static struct lex_process *lex_process;
 
 static char
