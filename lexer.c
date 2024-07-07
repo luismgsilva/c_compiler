@@ -10,6 +10,7 @@
         nextc();			\
     }
 
+struct token *read_next_token ();
 static struct lex_process *lex_process;
 static struct token tmp_token;
 
@@ -49,6 +50,25 @@ struct token
     memcpy(&tmp_token, _token, sizeof(struct token));
     tmp_token.pos = lex_file_position();
     return &tmp_token;
+}
+
+static struct token
+*lexer_last_token ()
+{
+    return vector_back_or_null(lex_process->token_vec);
+}
+
+static struct token
+*handler_whitespace ()
+{
+    struct token *last_token = lexer_last_token();
+    if (last_token)
+    {
+        last_token->whitespace = true;
+    }
+
+    nextc();
+    return read_next_token();
 }
 
 const char
@@ -95,6 +115,13 @@ struct token
         NUMERIC_CASE:
             token = token_make_number();
             break;
+
+        /* Ignore whitespaces */
+        case ' ':
+        case '\t':
+            token = handler_whitespace();
+            break;
+
         case EOF:
             /* Finished lexical analysis on the file. */
             break;
