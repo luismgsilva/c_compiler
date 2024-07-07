@@ -1,4 +1,1 @@
-int main()
-{
-	return 0;
-}
+"Hello" 2313123 "World"
