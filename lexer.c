@@ -9,6 +9,12 @@ peekc()
     return lex_process->function->peek_char(lex_process);
 }
 
+static void
+pushc (char c)
+{
+    lex_process->function->push_char(lex_process, c);
+}
+
 struct token
 *read_next_token()
 {
