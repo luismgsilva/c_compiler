@@ -13,6 +13,8 @@ struct lex_process
 
     process->pos.line = 1;
     process->pos.col = 1;
+
+    return process;
 }
 
 void
