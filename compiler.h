@@ -51,6 +51,7 @@ struct token
 {
 	int type;
 	int flags;
+	struct pos pos;
 
 	/*
 	 * Only one of the following datatypes will
