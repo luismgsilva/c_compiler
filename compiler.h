@@ -13,7 +13,7 @@ struct pos
 {
 	int line;
 	int col;
-	const char filename;
+	const char *filename;
 };
 
 enum
