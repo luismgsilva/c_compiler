@@ -19,7 +19,15 @@ struct token
 *read_next_token()
 {
     struct token *token = NULL;
-
+    char c = peekc();
+    switch (c)
+    {
+        case EOF:
+            /* Finished lexical analysis on the file. */
+            break;
+        default:
+            compiler_error(lex_process->compiler, "unexpected token\n");
+    }
     return token;
 }
 
