@@ -23,6 +23,19 @@ compiler_error (struct compile_process *compiler, const char *msg, ...)
 	exit(-1);
 }
 
+void
+compiler_warning (struct compile_process *compiler, const char *msg, ...)
+{
+	va_list args;
+
+	va_start(args, msg);
+	vfprintf(stderr, msg, args);
+	va_end (args);
+
+	fprintf(stderr, " on line %i, col %i in file %s\n",
+			compiler->pos.line, compiler->pos.col, compiler->pos.filename);
+}
+
 int
 compile_file (const char* file_name, const char* out_file_name, int flags)
 {
