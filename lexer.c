@@ -3,6 +3,7 @@
 #include "helpers/vector.h"
 #include "helpers/buffer.h"
 #include <assert.h>
+#include <ctype.h>
 
 #define LEX_GETC_IF(buffer, c, exp) 	\
     for (c =peekc(); exp; c = peekc(c))	\
@@ -328,6 +329,34 @@ static struct token
     struct token *token = token_create(&(struct token){.type=TOKEN_TYPE_SYMBOL,.cval=c});
 }
 
+static struct token
+*token_make_identifier_or_keyword ()
+{
+    struct buffer *buffer = buffer_create();
+    char c = 0;
+    LEX_GETC_IF(buffer, c, (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_');
+
+    /* Write NULL terminator to the string (0xx0) */
+    buffer_write(buffer, 0x00);
+
+    /* Check if this is a keyword */
+
+    return token_create(&(struct token){.type=TOKEN_TYPE_IDENTIFIER,.sval=buffer_ptr(buffer)});
+}
+
+struct token
+*read_special_token ()
+{
+    char c = peekc();
+    if (isalpha(c) || c == '_')
+    {
+        return token_make_identifier_or_keyword();
+    }
+
+    return NULL;
+
+}
+
 struct token
 *read_next_token()
 {
@@ -361,7 +390,11 @@ struct token
             /* Finished lexical analysis on the file. */
             break;
         default:
-            compiler_error(lex_process->compiler, "unexpected token\n");
+            token = read_special_token();
+            if (!token)
+            {
+                compiler_error(lex_process->compiler, "unexpected token\n");
+            }
     }
     return token;
 }
