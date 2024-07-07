@@ -30,6 +30,8 @@ nextc ()
         lex_process->pos.line += 1;
         lex_process->pos.col = 1;
     }
+
+    return c;
 }
 
 static void
