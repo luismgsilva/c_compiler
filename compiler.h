@@ -66,6 +66,41 @@ struct token
 	const char *between_brackets; /* 50+10+20 */
 };
 
+struct lex_process;
+typedef char (*LEX_PROCESS_NEXT_CHAR)(struct lex_process *process);
+typedef char (*LEX_PROCESS_PEEK_CHAR)(struct lex_process *process);
+typedef char (*LEX_PROCESS_PUSH_CHAR)(struct lex_process *process, char c);
+struct lex_process_functions
+{
+	LEX_PROCESS_NEXT_CHAR next_char;
+	LEX_PROCESS_PEEK_CHAR peek_char;
+	LEX_PROCESS_PUSH_CHAR push_char;
+};
+
+struct lex_process
+{
+	struct pos pos;
+	struct vector *token_vec;
+	struct compile_process *compiler;
+
+	/*
+	 * The number of brackets, for example:
+	 * ((50)) would result in:
+	 * current_expression_count = 2
+	 */
+	int current_expression_count;
+	struct buffer *parentheses_buffer;
+	struct lex_process_functions *function;
+
+	/*
+	 * This is be private data that the lexer does not
+	 * understand, but the person using the lexer does
+	 * understand.
+	 */
+	void *private;
+};
+
+
 enum
 {
 	COMPILER_FILE_COMPILED_OK,
@@ -77,6 +112,7 @@ struct compile_process
 	/* Flags on how this file should be compiled. */
 	int flags;
 
+	struct pos pos;
 	struct compile_process_input_file
 	{
 		FILE *fp;
