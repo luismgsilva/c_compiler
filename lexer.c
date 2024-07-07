@@ -127,7 +127,7 @@ struct token
         if (c == '\\')
         {
             /*
-             * TODO: Handle backspace character
+             * TODO: Handle backslash character
              * "Hello World\n" <- "\"
              */
             continue;
