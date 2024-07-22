@@ -354,6 +354,73 @@ static struct token
     return token;
 }
 
+struct token
+*token_make_one_line_comment ()
+{
+    struct buffer *buffer = buffer_create();
+    char c = 0;
+    /*
+     * Example: // Hello world
+     * It should be read until a newline or EOF character is found.
+     */
+    LEX_GETC_IF(buffer, c, c != '\n' && c != EOF);
+    return token_create (&(struct token){.type=TOKEN_TYPE_COMMENT,.sval=buffer_ptr(buffer)});
+}
+
+struct token
+*token_make_multiline_comment ()
+{
+    struct buffer *buffer = buffer_create();
+    char c = 0;
+    while (1)
+    {
+        LEX_GETC_IF(buffer, c, c != '*' && c != EOF);
+        if (c == EOF)
+        {
+            compiler_error (lex_process->compiler, "You did not close this multiline comment\n");
+        }
+        else if (c == '*')
+        {
+            // Skip the *
+            nextc();
+            if (peekc() == '/')
+            {
+                nextc();
+                break;
+            }
+        }
+    }
+    return token_create (&(struct token){.type=TOKEN_TYPE_COMMENT,.sval=buffer_ptr(buffer)});
+}
+
+struct token
+*handle_comment ()
+{
+    char c = peekc();
+    if (c == '/')
+    {
+        nextc();
+        if (peekc() == '/')
+        {
+            nextc();
+            return token_make_one_line_comment();
+        }
+        else if (peekc() == '*')
+        {
+            nextc();
+            return token_make_multiline_comment();
+        }
+        /*
+         * If its neither of the above,
+         * then we are dealing with a division operator.
+         */
+        pushc('/');
+        return token_make_operator_or_string();
+    }
+
+    return NULL;
+}
+
 static struct token
 *token_make_symbol ()
 {
@@ -409,12 +476,23 @@ struct token
 {
     struct token *token = NULL;
     char c = peekc();
+
+    token = handle_comment();
+    if (token)
+    {
+        return token;
+    }
+
     switch (c)
     {
         NUMERIC_CASE:
             token = token_make_number();
             break;
 
+        /*
+         * Excluding divison because '/' can also
+         * be a start of a comment.
+         */
         OPERATOR_CASE_EXCLUDING_DIVISION:
             token = token_make_operator_or_string();
             break;
