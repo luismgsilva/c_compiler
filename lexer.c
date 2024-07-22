@@ -398,6 +398,13 @@ struct token
 }
 
 struct token
+*token_make_newline ()
+{
+    nextc();
+    return token_create(&(struct token){.type=TOKEN_TYPE_NEWLINE});
+}
+
+struct token
 *read_next_token()
 {
     struct token *token = NULL;
@@ -425,6 +432,9 @@ struct token
         case '\t':
             token = handler_whitespace();
             break;
+
+        case '\n':
+            token = token_make_newline();
 
         case EOF:
             /* Finished lexical analysis on the file. */
