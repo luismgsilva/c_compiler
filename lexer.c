@@ -430,6 +430,7 @@ static struct token
         lex_finish_expression();
     }
     struct token *token = token_create(&(struct token){.type=TOKEN_TYPE_SYMBOL,.cval=c});
+    return token;
 }
 
 static struct token
