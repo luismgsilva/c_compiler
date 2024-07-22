@@ -505,6 +505,72 @@ lex_get_escaped_char(char c)
     return co;
 }
 
+void
+lexer_pop_token ()
+{
+    vector_pop(lex_process->token_vec);
+}
+
+bool
+is_hex_char (char c)
+{
+    c = tolower(c);
+    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+}
+
+const char
+*read_hex_number_str ()
+{
+    struct buffer *buffer = buffer_create();
+    char c = peekc();
+    LEX_GETC_IF(buffer, c, is_hex_char(c));
+
+    /* Write NULL terminator to the string (0xx0) */
+    buffer_write(buffer, 0x00);
+
+    return buffer_ptr(buffer);
+}
+
+struct token
+*token_make_special_number_hexadecimal ()
+{
+    /* Skip the 'x' */
+    nextc();
+
+    unsigned long number = 0;
+    const char *number_str = read_hex_number_str();
+
+    number = strtol(number_str, 0, 16);
+    return token_make_number_for_value(number);
+}
+
+struct token
+*token_make_special_number ()
+{
+    struct token *token = NULL;
+    struct token *last_token = lexer_last_token();
+
+    /*
+     * Example: 0x500
+     * Popping the first 0, because it is not used
+     * besides to indicate that its a special number
+     */
+    lexer_pop_token();
+
+    char c = peekc();
+    /* if its Hexadecimal Number */
+    if (c == 'x')
+    {
+        token = token_make_special_number_hexadecimal ();
+    }
+    /* if its Binary Number */
+    else if (c == 'b')
+    {
+    }
+
+    return token;
+}
+
 struct token
 *token_make_quote()
 {
@@ -554,6 +620,10 @@ struct token
 
         SYMBOL_CASE:
             token = token_make_symbol();
+            break;
+
+        case 'x':
+            token = token_make_special_number();
             break;
 
         case '"':

@@ -10,3 +10,6 @@ short
 */
 
 '\n'
+
+
+0xdead
