@@ -13,6 +13,8 @@
     }
 
 struct token *read_next_token ();
+bool lex_is_in_expression ();
+
 static struct lex_process *lex_process;
 static struct token tmp_token;
 
@@ -26,6 +28,20 @@ static char
 nextc ()
 {
     char c = lex_process->function->next_char(lex_process);
+
+    /*
+     * Example: (40+30)
+     * For each character from the expression, they share a pointer
+     *  to the `parentheses_buffer`.
+     * By the time it reaches 30, and tokenize that, for all of those
+     *  tokens, the `parentheses_buffer` will show the whole expression `40+30`
+     * It doesnt matter in which token you're on, they will all point to the whole expression.
+     */
+    if (lex_is_in_expression())
+    {
+        buffer_write(lex_process->parentheses_buffer, c);
+    }
+
     lex_process->pos.col +=1;
     if (c == '\n')
     {
@@ -60,6 +76,16 @@ struct token
 {
     memcpy(&tmp_token, _token, sizeof(struct token));
     tmp_token.pos = lex_file_position();
+    if (lex_is_in_expression())
+    {
+        /*
+         * Example: (40+30)
+         * Storing the `parentheses_buffer` to the`between_brackets` of the token.
+         * If we are at the token `30`, the between_brackets will
+         *  point to the whole expressions `40+30`.
+         */
+        tmp_token.between_brackets = buffer_ptr(lex_process->parentheses_buffer);
+    }
     return &tmp_token;
 }
 
