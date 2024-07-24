@@ -79,6 +79,14 @@ enum
 	TOKEN_TYPE_NEWLINE
 };
 
+enum
+{
+	NUMBER_TYPE_NORMAL,
+	NUMBER_TYPE_LONG,
+	NUMBER_TYPE_FLOAT,
+	NUMBER_TYPE_DOUBLE
+};
+
 struct token
 {
 	int type;
@@ -100,6 +108,11 @@ struct token
 		unsigned long long llnum; /* Long Long Value */
 		void* any; /* Points to any of the above datatypes */
 	};
+
+	struct token_number
+	{
+		int type;
+	} num;
 
 	/*
 	 * True if there is a whitespace between the token
