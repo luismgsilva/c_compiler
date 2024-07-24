@@ -51,6 +51,8 @@ compile_file (const char* file_name, const char* out_file_name, int flags)
 	if (lex(lex_process) != LEXICAL_ANALYSIS_ALL_OK)
 		return COMPILER_FAILED_WITH_ERRORS;
 
+	process->token_vec = lex_process->token_vec;
+
 	/* Preform parsing */
 
 	/* Preform code generation */
