@@ -185,7 +185,18 @@ struct compile_process
 
 	/* A vector of tokens from lexical analysis. */
 	struct vector *token_vec;
+
+	/* Used for push and pop nodes while parsing process. */
+	struct vector *node_vec;
+	/* Actual root of the tree. */
+	struct vector *node_tree_vec;
 	FILE *ofile;
+};
+
+enum
+{
+	PARSE_ALL_OK,
+	PARSE_GENERAL_ERROR
 };
 
 enum
@@ -268,6 +279,7 @@ void lex_process_free (struct lex_process *process);
 void *lex_process_private (struct lex_process *process);
 struct vector *lex_process_tokens (struct lex_process *process);
 int lex (struct lex_process *process);
+int parse (struct compile_process *process);
 
 /* Builds tokens for the input string. */
 struct lex_process* tokens_build_for_string (struct compile_process* compiler, const char* str);
