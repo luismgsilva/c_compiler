@@ -257,7 +257,7 @@ struct node
 
 	union {
 		char cval;
-		const char *val;
+		const char *sval;
 		unsigned int inum;
 		unsigned long lnum;
 		unsigned long long llnum;
