@@ -36,7 +36,7 @@ struct node
     /* Get the last node of the vector. */
     struct node *last_node = vector_back_ptr(node_vector);
     /* If the node vector is not empty, get the last node on the root. */
-    struct node *last_node_root = vector_empty(node_vector) ? NULL : vector_back_ptr(node_vector_root);
+    struct node *last_node_root = vector_empty(node_vector) ? NULL : vector_back_ptr_or_null(node_vector_root);
 
     /* Pop off the last node of the vector. */
     vector_pop(node_vector);
@@ -51,6 +51,37 @@ struct node
     }
 
     return last_node;
+}
+
+bool
+node_is_expressionable (struct node* node)
+{
+    return node->type == NODE_TYPE_EXPRESSION               ||
+           node->type == NODE_TYPE_EXPRESSION_PARENTHESES   ||
+           node->type == NODE_TYPE_UNARY                    ||
+           node->type == NODE_TYPE_IDENTIFIER               ||
+           node->type == NODE_TYPE_NUMBER;
+}
+
+/*
+ * Peek to the last node on the stack, if its something we
+ * can put in an expression, return it. Otherwise return null.
+ * If we peek and its function node or something, we cannot put
+ * a function into an expression. So, we return null.
+ */
+struct node*
+node_peek_expressionable_or_null ()
+{
+    struct node* last_node = node_peek_or_null();
+    return node_is_expressionable(last_node) ? last_node : NULL;
+}
+
+struct node*
+make_exp_node (struct node* left_node, struct node* right_node, const char* op)
+{
+    assert(left_node);
+    assert(right_node);
+    node_create(&(struct node){.type=NODE_TYPE_EXPRESSION,.exp.left=left_node,.exp.right=right_node,.exp.op=op});
 }
 
 struct node
