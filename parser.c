@@ -264,6 +264,90 @@ parse_identifier (struct history* history)
     parse_single_token_to_node();
 }
 
+
+static bool is_keyword_variable_modifier(const char* val)
+{
+    return S_EQ(val, "unsigned")    ||
+           S_EQ(val, "signed")      ||
+           S_EQ(val, "statis" )     ||
+           S_EQ(val, "const")       ||
+           S_EQ(val, "extern")      ||
+           S_EQ(val, "__ignore_typecheck__");
+}
+
+void
+parse_datatype_modifiers (struct datatype* dtype)
+{
+    struct token* token = token_peek_next();
+    while(token && token->type == TOKEN_TYPE_KEYWORD)
+    {
+        if (!is_keyword_variable_modifier(token->sval))
+        {
+            break;
+        }
+
+        if (S_EQ(token->sval, "signed"))
+        {
+            dtype->flags |= DATATYPE_FLAG_IS_SIGNED;
+        }
+        else if (S_EQ(token->sval, "static"))
+        {
+            dtype->flags |= DATATYPE_FLAG_IS_STATIC;
+        }
+        else if (S_EQ(token->sval, "const"))
+        {
+            dtype->flags |= DATATYPE_FLAG_IS_CONST;
+        }
+        else if (S_EQ(token->sval, "extern"))
+        {
+            dtype->flags |= DATATYPE_FLAG_IS_EXTERN;
+        }
+        else if (S_EQ(token->sval, "restrict"))
+        {
+            dtype->flags |= DATATYPE_FLAG_IS_RESTRICT;
+        }
+        else if (S_EQ(token->sval, "__ignore_typecheck__"))
+        {
+            dtype->flags |= DATATYPE_FLAG_IS_IGNORE_TYPE_CHECKING;
+        }
+
+        tokken_next();
+        token = token_peek_next();
+    }
+}
+
+void
+parse_datatype (struct datatype* dtype)
+{
+    memset(dtype, 0, sizeof(struct datatype));
+    dtype->flags |= DATATYPE_FLAG_IS_SIGNED;
+
+    parse_datatype_modifiers(dtype);
+    parse_datatype_type(dtype);
+    parse_datatype_modifiers(dtype);
+}
+
+void
+parse_variable_function_or_struct_union (struct history* history)
+{
+    struct datatype* dtype;
+    parse_datatype(&dtype);
+}
+
+/* Responsible for parsing all keyword tokens. */
+void
+parse_keyword (struct history* history)
+{
+    struct token* token = token_peek_next();
+    /* Either parsing a variable, a function, a struct, or a union */
+    if (is_keyword_variable_modifier(token->sval) || keyword_is_datatype(token->sval))
+    {
+        parse_variable_function_or_struct_union();
+        return;
+    }
+}
+
+
 int
 parse_expressionable_single (struct history* history)
 {
@@ -290,6 +374,10 @@ parse_expressionable_single (struct history* history)
 
         case TOKEN_TYPE_OPERATOR:
             parse_exp(history);
+            res = 0;
+            break;
+        case TOKEN_TYPE_KEYWORD:
+            parse_keyword(history);
             res = 0;
             break;
     }
