@@ -150,7 +150,7 @@ parser_node_shift_children_left (struct node* node)
 
     const char* right_op = node->exp.right->exp.op;
     struct node* new_exp_left_node = node->exp.left;
-    struct node* new_exp_right_node = node->exp.right;
+    struct node* new_exp_right_node = node->exp.right->exp.left;
     make_exp_node(new_exp_left_node, new_exp_right_node, node->exp.op);
 
     /* (50*20) */
