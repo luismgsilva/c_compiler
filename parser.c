@@ -212,7 +212,7 @@ void
 parse_exp_normal (struct history* history)
 {
     struct token* op_token = token_peek_next();
-    char* op = op_token->sval;
+    const char* op = op_token->sval;
     struct node* node_left = node_peek_expressionable_or_null();
     /* If the last node is not compatible to an expression, return. */
     if (!node_left)
