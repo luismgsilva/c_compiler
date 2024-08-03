@@ -318,7 +318,7 @@ parse_datatype_modifiers (struct datatype* dtype)
             dtype->flags |= DATATYPE_FLAG_IS_IGNORE_TYPE_CHECKING;
         }
 
-        tokken_next();
+        token_next();
         token = token_peek_next();
     }
 }
@@ -363,13 +363,122 @@ parser_get_pointer_depth()
     return depth;
 }
 
+void parser_datatype_init_type_and_size_for_primitive (struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out);
+void
+parser_datatype_adjust_size_for_secondary (struct datatype* datatype, struct token* datatype_secondary_token)
+{
+    if (!datatype_secondary_token)
+    {
+        return;
+    }
+
+    struct datatype* secondary_data_type = calloc(1, sizeof(struct datatype));
+    parser_datatype_init_type_and_size_for_primitive(datatype_secondary_token, NULL, secondary_data_type);
+    datatype->size += secondary_data_type->size;
+    datatype->secondary = secondary_data_type;
+    datatype->flags |= DATATYPE_FLAG_IS_SECONDARY;
+}
+
+bool
+parser_datatype_is_secondary_allowed_for_type (const char* type)
+{
+    /* e.i `long long` is allowed. */
+    return S_EQ(type, "long")   ||
+           S_EQ(type, "short")  ||
+           S_EQ(type, "double") ||
+           S_EQ(type, "float");
+}
+
+void
+parser_datatype_init_type_and_size_for_primitive (struct token* datatype_token, struct token* datatype_secondary_token, struct datatype* datatype_out)
+{
+    if (parser_datatype_is_secondary_allowed_for_type(datatype_token->sval), datatype_secondary_token)
+    {
+        compiler_error(current_process, "You are not allowed a secondary datatype here for the given datatype.");
+    }
+
+    if (S_EQ(datatype_token->sval, "void"))
+    {
+        datatype_out->type = DATA_TYPE_VOID;
+        datatype_out->size = DATA_SIZE_ZERO;
+    }
+    else if (S_EQ(datatype_token->sval, "char"))
+    {
+        datatype_out->type = DATA_TYPE_CHAR;
+        datatype_out->size = DATA_SIZE_BYTE;
+    }
+    else if (S_EQ(datatype_token->sval, "short"))
+    {
+        datatype_out->type = DATA_TYPE_SHORT;
+        datatype_out->size = DATA_SIZE_WORD;
+    }
+    else if (S_EQ(datatype_token->sval, "int"))
+    {
+        datatype_out->type = DATA_TYPE_INTEGER;
+        datatype_out->size = DATA_SIZE_DWORD;
+    }
+    else if (S_EQ(datatype_token->sval, "long"))
+    {
+        datatype_out->type = DATA_TYPE_LONG;
+        /* This is to be cahnged later. For now, keep as DWORD. */
+        datatype_out->size = DATA_SIZE_DWORD;
+    }
+    else if (S_EQ(datatype_token->sval, "float"))
+    {
+        datatype_out->type = DATA_TYPE_FLOAT;
+        datatype_out->size = DATA_SIZE_DWORD;
+    }
+    else if (S_EQ(datatype_token->sval, "double"))
+    {
+        datatype_out->type = DATA_TYPE_DOUBLE;
+        datatype_out->size = DATA_SIZE_DWORD;
+    }
+    else
+    {
+        compiler_error(current_process, "BUG: Invalid primitve datatype.\n");
+    }
+
+    /*
+     * Adjust the size of the datatype according to the secondary one (if any).
+     * e.i if `long long` is provided, it will adjust the size from 4 to 8.
+     */
+    parser_datatype_adjust_size_for_secondary(datatype_out, datatype_secondary_token);
+}
+
+bool
+parser_datatype_is_secondary_allowed (int expected_type)
+{
+    return expected_type == DATA_TYPE_EXPECT_PRIMITIVE;
+}
+
 void
 parser_datatype_init_type_and_size (struct token* datatype_token,
                                 struct token* datatype_secondary_token,
                                 struct datatype* datatype_out,
-                                int pointer_depth, int expected_types)
+                                int pointer_depth, int expected_type)
 {
+    /*
+     * Need to validate the `datatye_secondary_token` becasue,
+     * for example, `struct int` is not allowed.
+     */
+    if (!parser_datatype_is_secondary_allowed(expected_type) && datatype_secondary_token)
+    {
+        compiler_error(current_process, "You provided an invalid secondary datatype.\n");
+    }
 
+    switch (expected_type)
+    {
+        case DATA_TYPE_EXPECT_PRIMITIVE:
+            parser_datatype_init_type_and_size_for_primitive(datatype_token, datatype_secondary_token, datatype_out);
+        break;
+        case DATA_TYPE_EXPECT_STRUCT:
+        case DATA_TYPE_EXPECT_UNION:
+            compiler_error(current_process, "Structure and union types are currently unsupported (yet).\n");
+        break;
+
+        default:
+            compiler_error(current_process, "BUG: Unsupported datatype expectation.\n");
+    }
 }
 
 void
@@ -378,7 +487,14 @@ parser_datatype_init (struct token* datatype_token,
                     struct datatype* datatype_out,
                     int pointer_depth, int expected_type)
 {
+    parser_datatype_init_type_and_size(datatype_token, datatype_secondary_token, datatype_out, pointer_depth, expected_type);
+    datatype_out->type_str = datatype_token->sval;
 
+    if (S_EQ(datatype_token->sval, "long") && datatype_secondary_token && S_EQ(datatype_secondary_token->sval, "long"))
+    {
+        compiler_warning(current_process, "Our compiler does not support 64 bit longs, therefore your `long long` is defaulting to 32 bits.\n");
+        datatype_out->size = DATA_SIZE_DWORD;
+    }
 }
 
 int
@@ -439,6 +555,7 @@ parse_datatype_type (struct datatype* dtype)
 
     /* e.i `int**` */
     int pointer_depth = parser_get_pointer_depth();
+    parser_datatype_init(datatype_token, datatype_secondary_token, dtype, pointer_depth, expected_type);
 }
 
 void
@@ -455,7 +572,7 @@ parse_datatype (struct datatype* dtype)
 void
 parse_variable_function_or_struct_union (struct history* history)
 {
-    struct datatype* dtype;
+    struct datatype dtype;
     parse_datatype(&dtype);
 }
 
@@ -467,7 +584,7 @@ parse_keyword (struct history* history)
     /* Either parsing a variable, a function, a struct, or a union */
     if (is_keyword_variable_modifier(token->sval) || keyword_is_datatype(token->sval))
     {
-        parse_variable_function_or_struct_union();
+        parse_variable_function_or_struct_union(history);
         return;
     }
 }
