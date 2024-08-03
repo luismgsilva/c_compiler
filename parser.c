@@ -297,6 +297,10 @@ parse_datatype_modifiers (struct datatype* dtype)
         {
             dtype->flags |= DATATYPE_FLAG_IS_SIGNED;
         }
+        else if (S_EQ(token->sval, "unsigned"))
+        {
+            dtype->flags &= ~DATATYPE_FLAG_IS_SIGNED;
+        }
         else if (S_EQ(token->sval, "static"))
         {
             dtype->flags |= DATATYPE_FLAG_IS_STATIC;
