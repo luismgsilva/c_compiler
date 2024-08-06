@@ -188,6 +188,23 @@ struct scope
     struct scope* parent;
 };
 
+enum
+{
+	SYMBOL_TYPE_NODE,
+	/* Native function is a macro function that only exists in our binary. */
+	SYMBOL_TYPE_NATIVE_FUNCTION,
+	SYMBOL_TYPE_UNKNOWN
+};
+
+struct symbol
+{
+	/* All symbols need a unique name. They cannot share names. */
+	const char* name;
+
+	int type;
+	void* data;
+};
+
 struct compile_process
 {
 	/* Flags on how this file should be compiled. */
@@ -214,6 +231,18 @@ struct compile_process
 		struct scope* root;
 		struct scope* current;
 	} scope;
+
+	struct
+	{
+		/*
+		 * Current active symbol table.
+		 * Hold struct symbol pointers.
+		 */
+		struct vector* table;
+
+		/* Multiple symbol tables stored in here.. */
+		struct vector* tables;
+	} symbols;
 };
 
 enum
