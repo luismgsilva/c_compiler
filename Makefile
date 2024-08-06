@@ -1,4 +1,4 @@
-OBJECTS=./build/compiler.o ./build/cprocess.o ./build/token.o ./build/helpers/buffer.o ./build/helpers/vector.o ./build/lexer.o ./build/lex_process.o ./build/scope.o ./build/parser.o ./build/datatype.o ./build/node.o ./build/expressionable.o
+OBJECTS=./build/compiler.o ./build/cprocess.o ./build/token.o ./build/helpers/buffer.o ./build/helpers/vector.o ./build/lexer.o ./build/lex_process.o ./build/scope.o ./build/symbol_resolver.o ./build/parser.o ./build/datatype.o ./build/node.o ./build/expressionable.o
 INCLUDES= -I./
 
 all: $(OBJECTS)
@@ -27,6 +27,9 @@ all: $(OBJECTS)
 
 ./build/scope.o: ./scope.c
 	gcc ./scope.c $(INCLUDES) -o ./build/scope.o -g -c
+
+./build/symbol_resolver.o: ./symbol_resolver.c
+	gcc ./symbol_resolver.c $(INCLUDES) -o ./build/symbol_resolver.o -g -c
 
 ./build/expressionable.o: ./expressionable.c
 	gcc ./expressionable.c $(INCLUDES) -o ./build/expressionable.o -g -c
