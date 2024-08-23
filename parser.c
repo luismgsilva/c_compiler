@@ -80,6 +80,16 @@ token_next_is_operator (const char* op)
     return token_is_operator(token, op);
 }
 
+static void
+expect_sym (char c)
+{
+    struct token* next_token = token_next();
+    if (!next_token || next_token->type != TOKEN_TYPE_SYMBOL || next_token->cval != c)
+    {
+        compiler_error(current_process, "Expecting symbol %c however something else was provided\n", c);
+    }
+}
+
 void
 parse_single_token_to_node ()
 {
@@ -710,6 +720,8 @@ parse_variable_function_or_struct_union (struct history* history)
 
         make_variable_list_node(var_list);
     }
+
+    expect_sym(';');
 }
 
 /* Responsible for parsing all keyword tokens. */
