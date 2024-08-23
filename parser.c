@@ -636,6 +636,12 @@ make_variable_node_and_register (struct history* history, struct datatype* dtype
 }
 
 void
+make_variable_list_node (struct vector* var_list_vec)
+{
+    node_create(&(struct node){.type=NODE_TYPE_VARIABLE_LIST,.var_list.list=var_list_vec});
+}
+
+void
 parse_variable (struct datatype* dtype, struct token* name_token, struct history* history)
 {
     struct node* value_node = NULL;
@@ -682,6 +688,28 @@ parse_variable_function_or_struct_union (struct history* history)
 
     parse_variable(&dtype, name_token, history);
 
+    /* Check if there is more variables to parse. */
+    if (token_is_operator(token_peek_next(), ","))
+    {
+        struct vector* var_list = vector_create(sizeof(struct node*));
+        /* Pop off the original variable */
+        struct node* var_node = node_pop();
+        vector_push(var_list, &var_node);
+
+        /* e.g `a, b, c, d, .... = 50;` */
+        while (token_is_operator(token_peek_next(), ","))
+        {
+            /* Get rid of the comma. */
+            token_next();
+
+            name_token = token_next();
+            parse_variable(&dtype, name_token, history);
+            var_node = node_pop();
+            vector_push(var_list, &var_node);
+        }
+
+        make_variable_list_node(var_list);
+    }
 }
 
 /* Responsible for parsing all keyword tokens. */
