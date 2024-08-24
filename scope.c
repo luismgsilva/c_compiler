@@ -43,8 +43,8 @@ scope_free_root (struct compile_process* process)
     process->scope.current = NULL;
 }
 
-struct scope*
-scope_new (struct compile_process* process, int flags)
+struct scope *
+scope_new(struct compile_process *process, int flags)
 {
     assert(process->scope.root);
     assert(process->scope.current);
