@@ -382,6 +382,17 @@ struct node
 			   The inner would be NODE_TYPE_NUMBER value of 50. */
 			struct node* inner;
 		} bracket;
+
+		struct _struct
+		{
+			const char* name;
+			struct node* body_n;
+			/* struct abc
+			   { } var_name;
+			   NULL if not variable attached to structure. */
+			struct node* var;
+		} _struct;
+
 	};
 
 	union {
