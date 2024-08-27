@@ -26,6 +26,25 @@ variable_size_for_list (struct node* var_list_node)
     return size;
 }
 
+struct node*
+variable_struct_or_union_body_node(struct node* node)
+{
+    if (!node_is_struct_or_union_variable(node))
+    {
+        return NULL;
+    }
+
+    if (node->var.type.type == DATA_TYPE_STRUCT)
+    {
+        return node->var.type.struct_node->_struct.body_n;
+    }
+
+    /* TODO; Return the union body. */
+    #warning "Remember to implement unions"
+    printf("No unions nodes are yet implemented.\n");
+    exit(1);
+}
+
 int
 padding (int val, int to)
 {
@@ -55,7 +74,10 @@ align_value (int val, int to)
     return val;
 }
 
-int align_value_treat_positive (int val, int to)
+/* If the stack grows downwards, we are dealing with
+   many negative numbers. */
+int
+align_value_treat_positive (int val, int to)
 {
     assert(to >= 0);
     if (val < 0)
@@ -64,4 +86,32 @@ int align_value_treat_positive (int val, int to)
     }
 
     return align_value(val, to);
+}
+
+int
+compute_sum_padding (struct vector* vec)
+{
+    int padding = 0;
+    int last_type = -1;
+    bool mixed_types = false;
+
+    vector_set_peek_pointer(vec, 0);
+    struct node* cur_node = vector_peek_ptr(vec);
+    struct node* last_node = NULL;
+
+    while (cur_node)
+    {
+        if (cur_node->type != NODE_TYPE_VARIABLE)
+        {
+            cur_node = vector_peek_ptr(vec);
+            continue;
+        }
+
+        padding += cur_node->var.padding;
+        last_type = cur_node->var.type.type;
+        last_node = cur_node;
+        cur_node = vector_peek_ptr(vec);
+    }
+
+    return padding;
 }
