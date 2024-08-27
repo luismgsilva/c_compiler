@@ -524,6 +524,11 @@ size_t array_brackets_calculate_size (struct datatype* dtype, struct array_brack
 int array_total_indexes (struct datatype* dtype);
 bool datatype_is_struct_or_union (struct datatype* dtype);
 
+/* Gets the variable size from the given variable node. */
+size_t variable_size (struct node* var_node);
+/* Sums the variable size of all variable nodes inside the variable list node. */
+size_t variable_size_for_list (struct node* var_list_node);
+
 struct scope* scope_new(struct compile_process *process, int flags);
 struct scope* scope_create_root (struct compile_process* process);
 void scope_free_root (struct compile_process* process);
