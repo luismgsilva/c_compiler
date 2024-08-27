@@ -492,9 +492,13 @@ bool token_is_symbol (struct token *token, char c);
 bool token_is_nl_or_comment_or_newline_seperator (struct token *token);
 bool keyword_is_datatype (const char* str);
 bool token_is_primitive_keywords (struct token* token);
+bool token_is_operator (struct token* token, const char* val);
 
 bool datatype_is_struct_or_union_for_name (const char* name);
-bool token_is_operator (struct token* token, const char* val);
+size_t datatype_size_for_array_access (struct datatype* dtype);
+size_t datatype_element_size (struct datatype* dtype);
+size_t datatype_size_no_ptr (struct datatype* dtype);
+size_t datatype_size (struct datatype* dtype);
 
 struct node *node_create (struct node *_node);
 struct node* make_exp_node (struct node* left_node, struct node* right_node, const char* op);
