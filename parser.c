@@ -821,7 +821,7 @@ parse_body_single_statement (size_t* variable_size, struct vector* body_vec, str
 void
 parse_body (size_t* variable_size, struct history* history)
 {
-    parse_scope_new();
+    parser_scope_new();
 
     /* Read all statements into memory. */
     size_t temp_size = 0x00;
