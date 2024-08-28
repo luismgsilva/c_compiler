@@ -38,9 +38,16 @@ parser_new_scope_entity (struct node* node, int stack_offset, int flags)
     return entity;
 }
 
+struct parser_scope_entity*
+parser_scope_last_entity_stop_global_scope ()
+{
+    return scope_last_entity_stop_at(current_process, current_process->scope.root);
+}
+
 enum
 {
-    HISTORY_FLAG_INSIDE_UNION = 0b00000001
+    HISTORY_FLAG_INSIDE_UNION = 0b00000001,
+    HISTORY_FLAG_IS_UPWARDS_STACK = 0b00000010,
 };
 
 /* History system */
@@ -707,12 +714,59 @@ make_variable_node (struct datatype* dtype, struct token* name_token, struct nod
 }
 
 void
+parser_scope_offset_for_stack (struct node* node, struct history* history)
+{
+
+    /* `int main() { int x; int y; }`
+       `x` would be -4 and `y` -8.
+       The last entity affects the stack position.
+       We need to take into account all of the stack elements before us,
+       so that we are able to figure out the correct position. */
+    struct parser_scope_entity* last_entity = parser_scope_last_entity_stop_global_scope();
+
+    /* The stack goes upwards when we are looking for function arguments. */
+    bool upwards_stack = history->flags & HISTORY_FLAG_IS_UPWARDS_STACK;
+
+    /* `int main() { int x; }`
+       sizeof(x) = 4
+       The offset of x will be -sizeof(x) = -4 */
+    int offset = -variable_size(node);
+    if (upwards_stack)
+    {
+        #warning "Handle upwards stack"
+        compiler_error(current_process, "Not yet implemented.\n");
+    }
+
+    if (last_entity)
+    {
+        /* `int main() { int x; int y; }`
+           offset(x) = -4 (-sizeof(x))
+           offset(y) = -4 (-sizeof(y)) + offset(x) = -8
+        */
+        offset += variable_node(last_entity->node)->var.aoffset;
+        if (varaible_node_is_primitive(node))
+        {
+            variable_node(node)->var.padding = padding(upwards_stack ? offset : -offset, node->var.type.size);
+        }
+    }
+}
+
+void
+parser_scope_offset (struct node* node, struct history* history)
+{
+    parser_scope_offset_for_stack(node, history);
+}
+
+void
 make_variable_node_and_register (struct history* history, struct datatype* dtype, struct token* name_token, struct node* value_node)
 {
     make_variable_node(dtype, name_token, value_node);
     struct node* var_node = node_pop();
     #warning "Rememeber to calculate scope offsets and push to the scope."
+
     /* Calculate the scope offset. */
+    parser_scope_offset(var_node, history);
+
     /* Push the variable node to the scope. */
 
     node_push(var_node);

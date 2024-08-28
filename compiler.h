@@ -367,6 +367,8 @@ struct node
 		{
 			struct datatype type;
 			int padding;
+			/* Aligned offset. */
+			int aoffset;
 			const char* name;
 			struct node* val;
 		} var;
@@ -500,6 +502,7 @@ size_t datatype_size_for_array_access (struct datatype* dtype);
 size_t datatype_element_size (struct datatype* dtype);
 size_t datatype_size_no_ptr (struct datatype* dtype);
 size_t datatype_size (struct datatype* dtype);
+bool datatype_is_primitive (struct datatype* dtype);
 
 struct node *node_create (struct node *_node);
 struct node* make_exp_node (struct node* left_node, struct node* right_node, const char* op);
@@ -531,6 +534,8 @@ struct node* variable_struct_or_union_body_node(struct node* node);
 size_t variable_size (struct node* var_node);
 /* Sums the variable size of all variable nodes inside the variable list node. */
 size_t variable_size_for_list (struct node* var_list_node);
+struct node* variable_node (struct node* node);
+bool variable_node_is_primitive (struct node* node);
 
 int padding (int val, int to);
 int align_value (int val, int to);
