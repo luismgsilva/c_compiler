@@ -752,7 +752,7 @@ parser_scope_offset_for_stack (struct node* node, struct history* history)
            offset(y) = -4 (-sizeof(y)) + offset(x) = -8
         */
         offset += variable_node(last_entity->node)->var.aoffset;
-        if (varaible_node_is_primitive(node))
+        if (variable_node_is_primitive(node))
         {
             variable_node(node)->var.padding = padding(upwards_stack ? offset : -offset, node->var.type.size);
         }
@@ -887,7 +887,15 @@ parse_variable (struct datatype* dtype, struct token* name_token, struct history
 void
 parse_symbol ()
 {
-    compiler_error(current_process, "Symbols are not yet supported.\n");
+    if (token_next_is_symbol('{'))
+    {
+        size_t variable_size = 0;
+        struct history* history = history_begin(HISTORY_FLAG_IS_GLOBAL_SCOPE);
+        parse_body(&variable_size, history);
+        struct node* body_node = node_pop();
+
+        node_push(body_node);
+    }
 }
 
 void
@@ -993,7 +1001,7 @@ parser_finalize_body (struct history* history, struct node* body_node, struct ve
     }
 
     bool padded = padding != 0;
-    body_node->body.largest_var_node - largest_align_eligible_var_name;
+    body_node->body.largest_var_node = largest_align_eligible_var_name;
     body_node->body.padded = padded;
     body_node->body.size = *_variable_size;
     body_node->body.statements = body_vec;
@@ -1028,6 +1036,63 @@ parse_body_single_statement (size_t* variable_size, struct vector* body_vec, str
     node_push(body_node);
 }
 
+void
+parse_body_multiple_statements (size_t* variable_size, struct vector* body_vec, struct history* history)
+{
+    /* Create a blank body node. */
+    make_body_node(NULL, 0, false, NULL);
+    struct node* body_node = node_pop();
+
+    body_node->binded.owner = parser_current_body;
+    parser_current_body = body_node;
+
+    struct node* stmt_node = NULL;
+    struct node* largest_possible_var_node = NULL;
+    struct node* largest_align_eligible_var_node = NULL;
+
+    /* We have a body i.e { } therefore we must pop off the left curly brace.. */
+    expect_sym('{');
+
+    /* Find the largest possible variable node inside of a body. */
+    while (!token_next_is_symbol('}'))
+    {
+        parse_statement(history_down(history, history->flags));
+        stmt_node = node_pop();
+        if (stmt_node->type == NODE_TYPE_VARIABLE)
+        {
+            if (!largest_possible_var_node ||
+               (largest_possible_var_node->var.type.size <= stmt_node->var.type.size))
+            {
+                largest_possible_var_node = stmt_node;
+            }
+
+            if (variable_node_is_primitive(stmt_node))
+            {
+                if (!largest_align_eligible_var_node ||
+                   (largest_align_eligible_var_node->var.type.size <= stmt_node->var.type.size))
+                {
+                    largest_align_eligible_var_node = stmt_node;
+                }
+            }
+        }
+
+        /* Push the statement node to the body vector. */
+        vector_push(body_vec, &stmt_node);
+
+        /* We might have to change the variable size if this statement is a variable. */
+        parser_append_size_for_node(history, variable_size, variable_node_or_list(stmt_node));
+    }
+
+    /* Pop off the right curly brace. */
+    expect_sym('}');
+
+    parser_finalize_body(history, body_node, body_vec, variable_size, largest_align_eligible_var_node, largest_possible_var_node);
+    parser_current_body = body_node->binded.owner;
+
+    /* Push body node back to the stack. */
+    node_push(body_node);
+}
+
 /* `size_t* variable_size`: Set to the sum of all variable sizes
     encountered in the parsed body.*/
 void
@@ -1050,7 +1115,11 @@ parse_body (size_t* variable_size, struct history* history)
         return;
     }
 
+    /* We have some statements between curly braces `{ int a; int b; int c; }` */
+    parse_body_multiple_statements(variable_size, body_vec, history);
     parser_scope_finish();
+
+    #warning "Adjust the function stack size"
 }
 
 void
@@ -1238,6 +1307,9 @@ parse_next()
             break;
         case TOKEN_TYPE_KEYWORD:
             parse_keyword_for_global();
+            break;
+        case TOKEN_TYPE_SYMBOL:
+            parse_symbol();
             break;
     }
     return 0;

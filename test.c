@@ -1,4 +1,4 @@
-struct tania
 {
-
-};
+    int x;
+    int y;
+}
