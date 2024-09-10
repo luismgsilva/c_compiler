@@ -1123,9 +1123,50 @@ parse_body (size_t* variable_size, struct history* history)
 }
 
 void
-parse_struct_no_new_scope (struct datatype* dtype)
+parse_struct_no_new_scope (struct datatype* dtype, bool is_forward_declaration)
 {
+    struct node* body_node = NULL;
+    size_t body_variable_size = 0;
 
+    if (!is_forward_declaration)
+    {
+        parse_body(&body_variable_size, history_begin(HISTORY_FLAG_INSIDE_STRUCTURE));
+        body_node = node_pop();
+    }
+
+    /* e.g `struct dog`; type_str = "dog" */
+    make_struct_node(dtype->type_str, body_node);
+    struct node* struct_node = node_pop();
+    if (body_node)
+    {
+        dtype->size = body_node->body.size;
+    }
+    dtype->struct_node = struct_node;
+
+    /* struct dog { } abc; */
+    if (token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
+    {
+        struct token* var_name = token_next();
+        struct_node->flags |= NODE_FLAG_HAS_VARIABLE_COMBINED;
+        /* If there is no name for the struct. */
+        if (dtype->flags & DATATYPE_FLAG_STRUCT_UNION_NO_NAME)
+        {
+            /* Copy the variable name to the struct name.
+               e.g `struct {} dog;` -> `struct dog {} dog;` */
+            dtype->type_str = var_name->sval;
+            dtype->flags &= -DATATYPE_FLAG_STRUCT_UNION_NO_NAME;
+            struct_node->_struct.name = var_name->sval;
+        }
+
+        make_variable_node_and_register(history_begin(0), dtype, var_name, NULL);
+        struct_node->_struct.var = node_pop();
+    }
+
+    /* All structs end with semicolons. */
+    expect_sym(':');
+
+    /* We are done creating the struct. */
+    node_push(struct_node);
 }
 void
 parse_struct (struct datatype* dtype)
@@ -1136,7 +1177,7 @@ parse_struct (struct datatype* dtype)
         parser_scope_new();
 
     }
-    parse_struct_no_new_scope(dtype);
+    parse_struct_no_new_scope(dtype, is_forward_declaration);
 
     if (!is_forward_declaration)
     {
@@ -1171,6 +1212,12 @@ parse_variable_function_or_struct_union (struct history* history)
     if (datatype_is_struct_or_union(&dtype) && token_next_is_symbol('{'))
     {
         parse_struct_or_union(&dtype);
+
+        /* 'su_node' -> Struct or Union node */
+        struct node* su_node = node_pop();
+        symbol_resolver_build_for_node(current_process, su_node);
+        node_push(su_node);
+        return;
     }
 
     /* Ignore integer abbreviations if necessary
