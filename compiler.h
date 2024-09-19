@@ -563,6 +563,9 @@ void scope_push (struct compile_process* process, void* ptr, size_t elem_size);
 void scope_finish (struct compile_process* process);
 struct scope* scope_current (struct compile_process* process);
 
+void symbol_resolver_initialize (struct compile_process* process);
+void symbol_resolver_new_table (struct compile_process* process);
+void symbol_resolver_end_table (struct compile_process* process);
 void symbol_resolver_build_for_node (struct compile_process* process, struct node* node);
 struct symbol* symbol_resolver_get_symbol (struct compile_process* process, const char* name);
 

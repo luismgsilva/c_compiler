@@ -30,6 +30,9 @@ struct compile_process
 	process->cfile.fp = file;
 	process->ofile = out_file;
 
+	symbol_resolver_initialize(process);
+	symbol_resolver_new_table(process);
+
 	return process;
 }
 
