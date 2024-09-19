@@ -129,7 +129,10 @@ static struct token
      * We need to know the line and column we are currently
      * processing to be used in errors messages.
      */
-    current_process->pos = next_token->pos;
+    if (next_token)
+    {
+        current_process->pos = next_token->pos;
+    }
 
     parser_last_token = next_token;
     return vector_peek(current_process->token_vec);
@@ -1164,7 +1167,7 @@ parse_struct_no_new_scope (struct datatype* dtype, bool is_forward_declaration)
     dtype->struct_node = struct_node;
 
     /* struct dog { } abc; */
-    if (token_peek_next()->type == TOKEN_TYPE_IDENTIFIER)
+    if (token_is_identifier(token_peek_next()))
     {
         struct token* var_name = token_next();
         struct_node->flags |= NODE_FLAG_HAS_VARIABLE_COMBINED;
