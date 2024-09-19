@@ -553,6 +553,22 @@ parser_datatype_is_secondary_allowed (int expected_type)
     return expected_type == DATA_TYPE_EXPECT_PRIMITIVE;
 }
 
+size_t
+size_of_struct (const char* struct_name)
+{
+    struct symbol* sym = symbol_resolver_get_symbol(current_process, struct_name);
+    if (!sym)
+    {
+        return 0;
+    }
+
+    assert(sym->type == SYMBOL_TYPE_NODE);
+    struct node* node = sym->data;
+    assert(node->type == NODE_TYPE_STRUCT);
+
+    return node->_struct.body_n->body.size;
+}
+
 void
 parser_datatype_init_type_and_size (struct token* datatype_token,
                                 struct token* datatype_secondary_token,
