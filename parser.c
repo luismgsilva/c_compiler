@@ -590,8 +590,12 @@ parser_datatype_init_type_and_size (struct token* datatype_token,
             parser_datatype_init_type_and_size_for_primitive(datatype_token, datatype_secondary_token, datatype_out);
         break;
         case DATA_TYPE_EXPECT_STRUCT:
+            datatype_out->type = DATA_TYPE_STRUCT;
+            datatype_out->size = size_of_struct(datatype_token->sval);
+            datatype_out->struct_node = struct_node_for_name(current_process, datatype_token->sval);
+        break;
         case DATA_TYPE_EXPECT_UNION:
-            compiler_error(current_process, "Structure and union types are currently unsupported (yet).\n");
+            compiler_error(current_process, "union types are currently unsupported (yet).\n");
         break;
 
         default:
