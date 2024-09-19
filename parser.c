@@ -1183,7 +1183,7 @@ parse_struct_no_new_scope (struct datatype* dtype, bool is_forward_declaration)
     }
 
     /* All structs end with semicolons. */
-    expect_sym(':');
+    expect_sym(';');
 
     /* We are done creating the struct. */
     node_push(struct_node);
