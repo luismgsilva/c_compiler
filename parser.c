@@ -82,6 +82,7 @@ int parse_expressionable_single (struct history* history);
 void parse_expressionable (struct history* history);
 void parse_body_single_statement (size_t* variable_size, struct vector* body_vec, struct history* history);
 void parse_keyword (struct history* history);
+struct vector* parse_function_arguments (struct history* history);
 
 void
 parser_scope_new ()
@@ -937,7 +938,7 @@ parse_function (struct datatype* ret_type, struct token* name_token,
     }
 
     expect_op ("(");
-    #warning "Parse the function arguments."
+    arguments_vector = parse_function_arguments (history_begin (0));
     expect_sym (')');
 
     function_node->func.args.vector = arguments_vector;
@@ -1281,6 +1282,63 @@ parse_struct_or_union(struct datatype* dtype)
         default:
             compiler_error(current_process, "bug: The provided datatype is not a structure or union.\n");
     }
+}
+
+void
+parse_variable_full (struct history* history)
+{
+    struct datatype dtype;
+    parse_datatype (&dtype);
+
+    struct token* name_token = NULL;
+    if (token_peek_next ()->type == TOKEN_TYPE_IDENTIFIER)
+    {
+        name_token = token_next ();
+    }
+    parse_variable (&dtype, name_token, history);
+}
+
+void
+token_read_dots (size_t amount)
+{
+    for (size_t i = 0; i < amount; i++)
+    {
+        expect_op (".");
+    }
+}
+
+/* (int x, int y)  */
+struct vector*
+parse_function_arguments (struct history* history)
+{
+    parser_scope_new ();
+    struct vector* arguments_vec = vector_create (sizeof (struct node*));
+    while (!token_next_is_symbol (')'))
+    {
+        /* For variadic arguments.  */
+        if (token_next_is_operator ("."))
+        {
+            token_read_dots (3);
+            parser_scope_finish ();
+            return arguments_vec;
+        }
+
+        parse_variable_full (history_down (history,
+                          history->flags | HISTORY_FLAG_IS_UPWARDS_STACK));
+        struct node* argument_node = node_pop ();
+        vector_push (arguments_vec, &argument_node);
+
+        if (!token_next_is_operator (","))
+        {
+            break;
+        }
+
+        /* Pop of the comma.  */
+        token_next ();
+    }
+
+    parser_scope_finish ();
+    return arguments_vec;
 }
 
 void
