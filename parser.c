@@ -770,8 +770,14 @@ parser_scope_offset_for_stack (struct node* node, struct history* history)
     int offset = -variable_size(node);
     if (upwards_stack)
     {
-        #warning "Handle upwards stack"
-        compiler_error(current_process, "Not yet implemented.\n");
+        size_t stack_addition = \
+            function_node_argument_stack_addition (parser_current_function);
+        offset = stack_addition;
+        if (last_entity)
+        {
+            offset = datatype_size (&variable_node (
+                                        last_entity->node)->var.type);
+        }
     }
 
     if (last_entity)

@@ -603,6 +603,7 @@ void symbol_resolver_end_table (struct compile_process* process);
 void symbol_resolver_build_for_node (struct compile_process* process, struct node* node);
 struct symbol* symbol_resolver_get_symbol (struct compile_process* process, const char* name);
 struct symbol* symbol_resolver_get_symbol_for_native_function (struct compile_process* process, const char* name);
+size_t function_node_argument_stack_addition (struct node* node);
 
 #define TOTAL_OPERATOR_GROUPS 14
 #define MAX_OPERATOR_IN_GROUP 12
