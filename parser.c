@@ -190,6 +190,19 @@ expect_op (const char* op)
     }
 }
 
+static void
+expect_keyword (const char* keyword)
+{
+    struct token* next_token = token_next ();
+    if (!next_token ||  \
+        next_token->type != TOKEN_TYPE_KEYWORD || \
+        !S_EQ (next_token->sval, keyword))
+    {
+        compiler_error (current_process,
+            "Expecting the keyword %s but something was provided\n", keyword);
+    }
+}
+
 void
 parse_single_token_to_node ()
 {
@@ -1471,6 +1484,24 @@ parse_variable_function_or_struct_union (struct history* history)
     expect_sym(';');
 }
 
+void
+parse_if_stmt (struct history* history)
+{
+    expect_keyword ("if");
+    expect_op ("(");
+    /* Cond.  */
+    parse_expressionable_root (history);
+    expect_sym (')');
+
+    struct node* cond_node = node_pop ();
+    size_t var_size = 0;
+
+    /* if (COND)  { }*/
+    parse_body (&var_size, history);
+    struct node* body_node = node_pop ();
+    make_if_node (cond_node, body_node, NULL);
+}
+
 /* Responsible for parsing all keyword tokens. */
 void
 parse_keyword (struct history* history)
@@ -1480,6 +1511,12 @@ parse_keyword (struct history* history)
     if (is_keyword_variable_modifier(token->sval) || keyword_is_datatype(token->sval))
     {
         parse_variable_function_or_struct_union(history);
+        return;
+    }
+
+    if (S_EQ (token->sval, "if"))
+    {
+        parse_if_stmt (history);
         return;
     }
 }
