@@ -146,6 +146,16 @@ make_function_node (struct datatype* ret_type, const char* name,
 }
 
 void
+make_else_node (struct node* body_node)
+{
+    node_create (&(struct node)
+    {
+        .type=NODE_TYPE_STATEMENT_ELSE,
+        .stmt.else_stmt.body_node=body_node
+    });
+}
+
+void
 make_if_node (struct node* cond_node, struct node* body_node,
                                       struct node* next_node)
 {
