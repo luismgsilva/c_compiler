@@ -145,6 +145,16 @@ make_function_node (struct datatype* ret_type, const char* name,
 }
 
 void
+make_return_node (struct node* exp_node)
+{
+    node_create (&(struct node)
+    {
+        .type=NODE_TYPE_STATEMENT_RETURN,
+        .stmt.return_stmt.exp=exp_node
+    });
+}
+
+void
 make_else_node (struct node* body_node)
 {
     node_create (&(struct node)
