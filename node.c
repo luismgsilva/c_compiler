@@ -79,7 +79,7 @@ node_peek_expressionable_or_null ()
     return node_is_expressionable(last_node) ? last_node : NULL;
 }
 
-struct node*
+void
 make_exp_node (struct node* left_node, struct node* right_node, const char* op)
 {
     assert(left_node);

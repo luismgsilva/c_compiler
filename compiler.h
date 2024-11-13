@@ -613,7 +613,7 @@ bool node_is_value_type (struct node* node);
 
 struct node* struct_node_for_name (struct compile_process* current_process, const char* name);
 
-struct node* make_exp_node (struct node* left_node, struct node* right_node, const char* op);
+void make_exp_node (struct node* left_node, struct node* right_node, const char* op);
 void make_exp_parentheses_node (struct node* exp_node);
 
 void make_bracket_node (struct node* node);
