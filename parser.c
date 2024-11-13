@@ -1719,6 +1719,22 @@ parse_for_stmt (struct history* history)
     make_for_node (init_node, cond_node, loop_node, body_node);
 }
 
+void
+parse_continue (struct history* history)
+{
+    expect_keyword ("continue");
+    expect_sym (';');
+    make_continue_node ();
+}
+
+void
+parse_break (struct history* history)
+{
+    expect_keyword ("break");
+    expect_sym (';');
+    make_break_node ();
+}
+
 /* Responsible for parsing all keyword tokens. */
 void
 parse_keyword (struct history* history)
@@ -1731,7 +1747,15 @@ parse_keyword (struct history* history)
         return;
     }
 
-    if (S_EQ (token->sval, "return"))
+    if (S_EQ (token->sval, "break"))
+    {
+        parse_break (history);
+    }
+    else if (S_EQ (token->sval, "continue"))
+    {
+        parse_continue (history);
+    }
+    else if (S_EQ (token->sval, "return"))
     {
         parse_return (history);
         return;

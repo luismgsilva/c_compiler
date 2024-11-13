@@ -35,6 +35,8 @@ main (int x)
 
     switch (1)
     {
+        break;
+        continue;
     }
 
     return 56;
