@@ -1566,6 +1566,70 @@ parse_return (struct history* history)
     expect_sym (';');
 }
 
+bool
+parse_for_loop_part (struct history* history)
+{
+    if (token_next_is_symbol (';'))
+    {
+        /* We have nothing here i.e `for (;`
+           Ignore the semicolon.  */
+        token_next ();
+        return false;
+    }
+
+    parse_expressionable_root (history);
+    /* for (int i = 0; i < 3)  */
+    expect_sym (';');
+    return true;
+}
+
+bool
+parse_for_loop_part_loop (struct history* history)
+{
+    if (token_next_is_symbol (')'))
+    {
+        return false;
+    }
+
+    parse_expressionable_root (history);
+    return true;
+}
+void
+parse_for_stmt (struct history* history)
+{
+    struct node* init_node = NULL;
+    struct node* cond_node = NULL;
+    struct node* loop_node = NULL;
+    struct node* body_node = NULL;
+
+    expect_keyword ("for");
+    expect_op ("(");
+    /* Parse the initializer.  */
+    if (parse_for_loop_part (history))
+    {
+        init_node = node_pop ();
+    }
+    /* Parse the condition.  */
+    if (parse_for_loop_part (history))
+    {
+        cond_node = node_pop ();
+    }
+    /* Parse the loop.  */
+    if (parse_for_loop_part_loop (history))
+    {
+        loop_node = node_pop ();
+    }
+
+    /* for (int i = 0; i < 3; i++)  */
+    expect_sym (')');
+
+    /* Parse the body.  */
+    size_t variable_size = 0;
+    parse_body (&variable_size, history);
+    body_node = node_pop ();
+    make_for_node (init_node, cond_node, loop_node, body_node);
+}
+
 /* Responsible for parsing all keyword tokens. */
 void
 parse_keyword (struct history* history)
@@ -1583,10 +1647,14 @@ parse_keyword (struct history* history)
         parse_return (history);
         return;
     }
-
-    if (S_EQ (token->sval, "if"))
+    else if (S_EQ (token->sval, "if"))
     {
         parse_if_stmt (history);
+        return;
+    }
+    else if (S_EQ (token->sval, "for"))
+    {
+        parse_for_stmt (history);
         return;
     }
 }

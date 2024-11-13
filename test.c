@@ -16,5 +16,12 @@ main (int x)
         int d = 44;
     }
 
+
+    int i;
+    for (i = 0; i < 30; i+=1)
+    {
+
+    }
+
     return 56;
 }
