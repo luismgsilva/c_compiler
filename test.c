@@ -28,5 +28,10 @@ main (int x)
 
     }
 
+    do
+    {
+        int b = 0;
+    } while (1);
+
     return 56;
 }
