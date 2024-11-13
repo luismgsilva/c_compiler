@@ -145,6 +145,17 @@ make_function_node (struct datatype* ret_type, const char* name,
 }
 
 void
+make_while_node (struct node* exp_node, struct node* body_node)
+{
+    node_create (&(struct node)
+    {
+        .type=NODE_TYPE_STATEMENT_WHILE,
+        .stmt.while_stmt.exp_node=exp_node,
+        .stmt.while_stmt.body_node=body_node
+    });
+}
+
+void
 make_for_node (struct node* init_node, struct node* cond_node,
                struct node* loop_node, struct node* body_node)
 {

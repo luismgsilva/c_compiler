@@ -23,5 +23,10 @@ main (int x)
 
     }
 
+    while (1)
+    {
+
+    }
+
     return 56;
 }
