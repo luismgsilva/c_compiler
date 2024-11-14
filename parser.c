@@ -1651,7 +1651,10 @@ parse_do_while (struct history* history)
     parse_keyword_parentheses_expression ("while");
     struct node* exp_node = node_pop ();
     expect_sym (';');
+
+    make_do_while_node (body_node, exp_node);
 }
+
 
 void
 parse_while (struct history* history)
