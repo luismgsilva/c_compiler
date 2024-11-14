@@ -37,6 +37,7 @@ main (int x)
     {
         break;
         continue;
+        goto abc;
     }
 
     abc:
