@@ -263,10 +263,10 @@ parse_single_token_to_node ()
             node = node_create(&(struct node){.type=NODE_TYPE_NUMBER, .llnum=token->llnum});
             break;
         case TOKEN_TYPE_IDENTIFIER:
-            node = node_create(&(struct node){.type=TOKEN_TYPE_IDENTIFIER, .sval=token->sval});
+            node = node_create(&(struct node){.type=NODE_TYPE_IDENTIFIER, .sval=token->sval});
             break;
         case TOKEN_TYPE_STRING:
-            node = node_create(&(struct node){.type=TOKEN_TYPE_STRING, .sval=token->sval});
+            node = node_create(&(struct node){.type=NODE_TYPE_STRING, .sval=token->sval});
             break;
         default:
             compiler_error(current_process, "This is not a single token that can be converted to a node.");
