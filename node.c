@@ -80,6 +80,16 @@ node_peek_expressionable_or_null ()
 }
 
 void
+make_label_node (struct node* name_node)
+{
+    node_create (& (struct node)
+    {
+        .type=NODE_TYPE_LABEL,
+        .label.name=name_node,
+    });
+}
+
+void
 make_continue_node ()
 {
     node_create (& (struct node)

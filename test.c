@@ -39,5 +39,7 @@ main (int x)
         continue;
     }
 
+    abc:
+
     return 56;
 }

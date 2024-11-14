@@ -508,6 +508,12 @@ struct node
 				bool has_default_case;
 			} switch_stmt;
 		} stmt;
+
+		struct node_label
+		{
+			struct node* name;
+		} label;
+
 	};
 
 	union {
@@ -613,6 +619,7 @@ bool node_is_value_type (struct node* node);
 
 struct node* struct_node_for_name (struct compile_process* current_process, const char* name);
 
+void make_label_node (struct node* name_node);
 void make_continue_node ();
 void make_break_node ();
 void make_exp_node (struct node* left_node, struct node* right_node, const char* op);
