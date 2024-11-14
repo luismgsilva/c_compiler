@@ -1127,6 +1127,7 @@ parse_statement (struct history* history)
     if (token_peek_next()->type == TOKEN_TYPE_SYMBOL && !token_is_symbol(token_peek_next(), ';'))
     {
         parse_symbol();
+        return;
     }
 
     /* All statements end with semicolons; */
