@@ -42,5 +42,12 @@ main (int x)
 
     abc:
 
+    switch (x)
+    {
+        case 1:
+            break;
+
+    }
+
     return 56;
 }

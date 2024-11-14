@@ -80,6 +80,16 @@ node_peek_expressionable_or_null ()
 }
 
 void
+make_case_node (struct node* exp_node)
+{
+    node_create ( & (struct node)
+    {
+        .type=NODE_TYPE_STATEMENT_CASE,
+        .stmt._case.exp_node=exp_node,
+    });
+}
+
+void
 make_goto_node (struct node* name_node)
 {
     node_create (& (struct node)
