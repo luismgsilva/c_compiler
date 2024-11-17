@@ -295,7 +295,7 @@ enum
 {
 	NODE_FLAG_INSIDE_EXPRESSION      = 0b00000001,
 	NODE_FLAG_IS_FORWARD_DECLARATION = 0b00000010,
-	NODE_FLAG_HAS_VARIABLE_COMBINED  = 0B00000100
+	NODE_FLAG_HAS_VARIABLE_COMBINED  = 0b00000100
 };
 
 struct array_brackets
@@ -386,6 +386,12 @@ struct node
 			const char* name;
 			struct node* val;
 		} var;
+
+		struct node_tenary
+		{
+			struct node* true_node;
+			struct node* false_node;
+		} tenary;
 
 		struct varlist
 		{
@@ -628,6 +634,7 @@ bool node_is_expression_or_parentheses (struct node* node);
 bool node_is_value_type (struct node* node);
 
 struct node* struct_node_for_name (struct compile_process* current_process, const char* name);
+void make_tenary_node (struct node* true_node, struct node* false_node);
 void make_case_node (struct node* exp_node);
 void make_goto_node (struct node* name_node);
 void make_label_node (struct node* name_node);

@@ -49,5 +49,7 @@ main (int x)
 
     }
 
+    x = 50 ? 20 : 10;
+
     return 56;
 }
