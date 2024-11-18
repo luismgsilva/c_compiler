@@ -53,5 +53,7 @@ main (int x)
     y = 50,30;
     z = abc[50];
 
+    x = (int) 32;
+
     return 56;
 }

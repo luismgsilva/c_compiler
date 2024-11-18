@@ -80,6 +80,17 @@ node_peek_expressionable_or_null ()
 }
 
 void
+make_cast_node (struct datatype* dtype, struct node* operand_node)
+{
+    node_create (& (struct node)
+    {
+        .type=NODE_TYPE_CAST,
+        .cast.dtype=*dtype,
+        .cast.operand=operand_node
+    });
+}
+
+void
 make_tenary_node (struct node* true_node, struct node* false_node)
 {
     node_create (& (struct node)

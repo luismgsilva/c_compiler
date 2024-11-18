@@ -530,6 +530,15 @@ struct node
 			struct node* name;
 		} label;
 
+		/* `(int) 56`
+		   datatype_dtype = int
+		   operand points to the 56 number.  */
+		struct cast
+		{
+			struct datatype dtype;
+			struct node* operand;
+		} cast;
+
 	};
 
 	union {
@@ -634,6 +643,7 @@ bool node_is_expression_or_parentheses (struct node* node);
 bool node_is_value_type (struct node* node);
 
 struct node* struct_node_for_name (struct compile_process* current_process, const char* name);
+void make_cast_node (struct datatype* dtype, struct node* operand_node);
 void make_tenary_node (struct node* true_node, struct node* false_node);
 void make_case_node (struct node* exp_node);
 void make_goto_node (struct node* name_node);
