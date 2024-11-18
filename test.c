@@ -69,3 +69,8 @@ foo (void)
 {
     struct dog* b;
 }
+
+union abc
+{
+    int x;
+} kk;
