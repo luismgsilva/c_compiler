@@ -57,3 +57,15 @@ main (int x)
 
     return 56;
 }
+
+struct dog;
+struct dog
+{
+    int x;
+};
+
+int
+foo (void)
+{
+    struct dog* b;
+}

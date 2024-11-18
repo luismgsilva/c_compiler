@@ -942,6 +942,7 @@ datatype_struct_node_fix (struct fixup* fixup)
 {
     struct datatype_struct_node_fix_private* private = fixup_private (fixup);
     struct datatype* dtype = &private->node->var.type;
+    dtype->type = DATA_TYPE_STRUCT;
     dtype->type = size_of_struct (dtype->type_str);
     dtype->struct_node = struct_node_for_name (current_process, \
                                                dtype->type_str);
@@ -1591,6 +1592,13 @@ parse_function_arguments (struct history* history)
 }
 
 void
+parse_forward_declaration (struct datatype* dtype)
+{
+    /* Since this is a forward declaration, parse the struct.  */
+    parse_struct (dtype);
+}
+
+void
 parse_variable_function_or_struct_union (struct history* history)
 {
     struct datatype dtype;
@@ -1605,6 +1613,12 @@ parse_variable_function_or_struct_union (struct history* history)
         struct node* su_node = node_pop();
         symbol_resolver_build_for_node(current_process, su_node);
         node_push(su_node);
+        return;
+    }
+
+    if (token_next_is_symbol (';'))
+    {
+        parse_forward_declaration (&dtype);
         return;
     }
 
