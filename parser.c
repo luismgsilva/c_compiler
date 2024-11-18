@@ -472,6 +472,20 @@ parse_for_parentheses (struct history* history)
     parser_deal_with_additional_expression ();
 }
 
+void
+parse_for_comma (struct history* history)
+{
+    /* Skip the comma.  */
+    token_next ();
+    /* `50, 30`
+        `50` would be set as left_node.  */
+    struct node* left_node = node_pop ();
+    parse_expressionable_root (history);
+    struct node* right_node = node_pop ();
+    make_exp_node (left_node, right_node, ",");
+
+}
+
 /*
  * Responsible for parsing an operator,
  * and merging with the right operand.
@@ -486,6 +500,10 @@ parse_exp (struct history* history)
     else if (S_EQ (token_peek_next ()->sval, "?"))
     {
         parse_for_tenary (history);
+    }
+    else if (S_EQ (token_peek_next ()->sval, ","))
+    {
+        parse_for_comma (history);
     }
     else
     {
