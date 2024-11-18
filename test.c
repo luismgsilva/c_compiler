@@ -51,6 +51,7 @@ main (int x)
 
     x = 50 ? 20 : 10;
     y = 50,30;
+    z = abc[50];
 
     return 56;
 }
