@@ -57,7 +57,7 @@ void
 codegen_generate_data_section ()
 {
     asm_push ("section .data");
-    struct node* node = codegen_node_next ();
+    struct node* node = NULL;
     while ((node = codegen_node_next ()) != NULL)
     {
         codegen_generate_data_section_part (node);
