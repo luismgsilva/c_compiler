@@ -1,4 +1,4 @@
-OBJECTS=./build/compiler.o ./build/cprocess.o ./build/token.o ./build/helpers/buffer.o ./build/helpers/vector.o ./build/lexer.o ./build/lex_process.o ./build/scope.o ./build/symbol_resolver.o ./build/fixup.o ./build/array.o ./build/parser.o ./build/datatype.o ./build/node.o ./build/helper.o ./build/expressionable.o
+OBJECTS=./build/compiler.o ./build/cprocess.o ./build/token.o ./build/helpers/buffer.o ./build/helpers/vector.o ./build/lexer.o ./build/lex_process.o ./build/scope.o ./build/symbol_resolver.o ./build/codegen.o ./build/fixup.o ./build/array.o ./build/parser.o ./build/datatype.o ./build/node.o ./build/helper.o ./build/expressionable.o
 INCLUDES= -I./
 
 all: $(OBJECTS)
@@ -33,6 +33,9 @@ all: $(OBJECTS)
 
 ./build/fixup.o: ./fixup.c
 	gcc fixup.c $(INCLUDES) -o ./build/fixup.o -g -c
+
+./build/codegen.o: ./codegen.c
+	gcc codegen.c $(INCLUDES) -o ./build/codegen.o -g -c
 
 ./build/array.o: ./array.c
 	gcc ./array.c $(INCLUDES) -o ./build/array.o -g -c

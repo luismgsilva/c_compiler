@@ -60,6 +60,10 @@ compile_file (const char* file_name, const char* out_file_name, int flags)
 	}
 
 	/* Preform code generation */
+	if (codegen (process) != CODEGEN_ALL_OK)
+	{
+		return COMPILER_FAILED_WITH_ERRORS;
+	}
 
 	return COMPILER_FILE_COMPILED_OK;
 }
