@@ -53,7 +53,6 @@ array_brackets_calculate_size_from_index (struct datatype* dtype, struct array_b
     {
         /* Must be a number to calculate the array size in compile time. */
         assert(array_bracket_node->bracket.inner->type == NODE_TYPE_NUMBER);
-        array_bracket_node = vector_peek_ptr(array_vec);
         int number = array_bracket_node->bracket.inner->llnum;
         size *= number;
         array_bracket_node = vector_peek_ptr(array_vec);
