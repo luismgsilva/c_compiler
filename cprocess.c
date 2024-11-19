@@ -15,7 +15,7 @@ struct compile_process
 	FILE* out_file = NULL;
 	if (out_file_name)
 	{
-		FILE* out_file = fopen(out_file_name, "w");
+		out_file = fopen(out_file_name, "w");
 		if (!out_file)
 		{
 			return NULL;
