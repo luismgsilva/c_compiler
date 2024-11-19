@@ -45,12 +45,87 @@ asm_push (const char* insn, ...)
     asm_push_args (insn, args);
     va_end (args);
 }
+static const char*
+asm_keyword_for_size (size_t size, char* tmp_buf)
+{
+    const char* keyword = NULL;
+    switch (size)
+    {
+        case DATA_SIZE_BYTE:
+            keyword = "db";
+            break;
+        case DATA_SIZE_WORD:
+            keyword = "dw";
+            break;
+        case DATA_SIZE_DWORD:
+            keyword = "dd";
+            break;
+        case DATA_SIZE_DDWORD:
+            keyword = "dq";
+            break;
+
+        default:
+            sprintf (tmp_buf, "times %lld db", (unsigned long) size);
+            return tmp_buf;
+    }
+
+    strcpy (tmp_buf, keyword);
+    return tmp_buf;
+}
+
+void
+codegen_generate_global_variable_for_primitive (struct node* node)
+{
+    char tmp_buf[256];
+    if (node->var.val != NULL)
+    {
+        /* Handle the value.  */
+        if (node->var.val->type == NODE_TYPE_STRING)
+        {
+            #warning "Dont forget to handle the string value."
+        }
+        else
+        {
+            #warning "Dont forget to handle the numeric value."
+        }
+
+    }
+
+    asm_push ("%s: %s 0", node->var.name, \
+                asm_keyword_for_size (variable_size (node), tmp_buf));
+}
+
+void
+codegen_generate_global_variable (struct node *node)
+{
+    asm_push ("; %s %s", node->var.type.type_str, node->var.name);
+    switch (node->var.type.type)
+    {
+        case DATA_TYPE_VOID:
+        case DATA_TYPE_CHAR:
+        case DATA_TYPE_SHORT:
+        case DATA_TYPE_INTEGER:
+        case DATA_TYPE_LONG:
+            codegen_generate_global_variable_for_primitive (node);
+            break;
+        case DATA_TYPE_DOUBLE:
+        case DATA_TYPE_FLOAT:
+            compiler_error(current_process,
+                    "Doubles and floats are not supported in our subset of C");
+            break;
+    }
+}
 
 void
 codegen_generate_data_section_part (struct node* node)
 {
     /* Switch to process the global data..  */
-
+    switch (node->type)
+    {
+        case NODE_TYPE_VARIABLE:
+            codegen_generate_global_variable (node);
+            break;
+    }
 }
 
 void
