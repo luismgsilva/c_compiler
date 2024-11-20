@@ -29,6 +29,7 @@ struct compile_process
 	process->flags=flags;
 	process->cfile.fp = file;
 	process->ofile = out_file;
+	process->generator = codegenerator_new (process);
 
 	symbol_resolver_initialize(process);
 	symbol_resolver_new_table(process);

@@ -205,6 +205,26 @@ struct symbol
 	void* data;
 };
 
+struct codegen_entry_point
+{
+	/* ID of the entry point.  */
+	int id;
+};
+
+struct codegen_exit_point
+{
+	/* ID of the exit point.  */
+	int id;
+};
+
+struct code_generator
+{
+	/* Vector of struct codegen_entry_point*.  */
+	struct vector* entry_points;
+	/* Vector of struct codegen_exit_point*.  */
+	struct vector* exit_points;
+};
+
 struct compile_process
 {
 	/* Flags on how this file should be compiled. */
@@ -243,6 +263,9 @@ struct compile_process
 		/* Multiple symbol tables stored in here.. */
 		struct vector* tables;
 	} symbols;
+
+	/* Pointer to our code generator.  */
+	struct code_generator* generator;
 };
 
 enum
@@ -633,6 +656,7 @@ struct vector *lex_process_tokens (struct lex_process *process);
 int lex (struct lex_process *process);
 int parse (struct compile_process *process);
 int codegen (struct compile_process* process);
+struct code_generator* codegenerator_new (struct compile_process* process);
 
 /* Builds tokens for the input string. */
 struct lex_process* tokens_build_for_string (struct compile_process* compiler, const char* str);
