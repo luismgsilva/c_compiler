@@ -47,11 +47,70 @@ asm_push (const char* insn, ...)
     va_end (args);
 }
 
+void
+asm_push_no_nl (const char* insn, ...)
+{
+    va_list args;
+    va_start (args, insn);
+    vfprintf (stdout, insn, args);
+    va_end (args);
+    if (current_process->ofile)
+    {
+        va_list args;
+        va_start (args, insn);
+        vfprintf (current_process->ofile, insn, args);
+        va_end (args);
+    }
+}
+
+const char*
+codegen_get_label_for_string (const char* str)
+{
+    const char* result = NULL;
+    struct code_generator* generator = current_process->generator;
+    vector_set_peek_pointer (generator->string_table, 0);
+    struct string_table_element* current = \
+                        vector_peek_ptr (generator->string_table);
+    while (current)
+    {
+        if (S_EQ (current->str, str))
+        {
+            result = current->label;
+            break;
+        }
+        current = vector_peek_ptr (generator->string_table);
+    }
+
+    return result;
+}
+
+const char*
+codegen_register_string (const char* str)
+{
+    const char* label = codegen_get_label_for_string (str);
+    if (label)
+    {
+        /* Already registered this string, just return
+           the label to the string memory.  */
+        return label;
+    }
+
+    struct string_table_element* str_elem = \
+                        calloc (1, sizeof (struct string_table_element));
+    int label_id = codegen_label_count ();
+    sprintf ((char*)str_elem->label, "str_%i", label_id);
+    str_elem->str = str;
+    vector_push (current_process->generator->string_table, &str_elem);
+    return str_elem->label;
+}
+
 struct code_generator*
 codegenerator_new (struct compile_process* process)
 {
     struct code_generator* generator = \
                         calloc (1, sizeof (struct code_generator));
+    generator->string_table = \
+                        vector_create (sizeof (struct string_table_element*));
     generator->entry_points = \
                         vector_create (sizeof (struct codegen_entry_point*));
     generator->exit_points  = \
@@ -275,10 +334,60 @@ codegen_generate_root ()
     }
 }
 
+bool
+codegen_write_string_char_escaped (char c)
+{
+    const char* c_out = NULL;
+    switch (c)
+    {
+        case '\n':
+            c_out = "10";
+            break;
+        case '\t':
+            c_out = "9";
+            break;
+    }
+
+    if (c_out)
+    {
+        asm_push_no_nl ("%s, ", c_out);
+    }
+    return c_out != NULL;
+}
+
+void
+codegen_write_string (struct string_table_element* element)
+{
+    asm_push_no_nl ("%s: db ", element->label);
+    size_t len = strlen (element->str);
+    for (int i = 0; i < len; i++)
+    {
+        char c = element->str[i];
+        bool handled = codegen_write_string_char_escaped (c);
+        if (handled)
+        {
+            continue;
+        }
+        asm_push_no_nl ("'%c', ", c);
+    }
+
+    asm_push_no_nl ("0");
+    asm_push ("");
+}
+
 void
 codegen_write_strings ()
 {
     #warning "Loop through the string table and write all the strings"
+    struct code_generator* generator = current_process->generator;
+    vector_set_peek_pointer (generator->string_table, 0);
+    struct string_table_element* element = \
+                        vector_peek_ptr (generator->string_table);
+    while (element)
+    {
+        codegen_write_string (element);
+        element = vector_peek_ptr (generator->string_table);
+    }
 }
 
 void
@@ -300,12 +409,13 @@ codegen (struct compile_process* process)
     codegen_generate_root ();
     codegen_finish_scope ();
 
+    codegen_register_string ("Hello there.");
+    codegen_register_string ("Hello there.");
+    codegen_register_string ("Hello there.");
+    codegen_register_string ("yes.\n");
+
     /* Generate read only data.  */
     codegen_generate_readonly ();
 
-    codegen_begin_entry_exit_point ();
-    codegen_goto_exit_point (NULL);
-    codegen_goto_entry_point (NULL);
-    codegen_end_entry_exit_point ();
     return 0;
 }
