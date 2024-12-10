@@ -386,6 +386,78 @@ struct parsed_switch_case
 	int index;
 };
 
+struct stack_frame_data
+{
+	/* The datatype that was pushed to the stack.  */
+	struct datatype dtype;
+};
+
+struct stack_frame_element
+{
+	/* Stack frame element flags.  */
+	int flags;
+
+	/* The type of the frame element. (e.g., saved base pointer,
+	   result value).  */
+	int type;
+	/* The name that describes the frame element, not a variable name.
+	   I.e result_value.   */
+	const char* name;
+
+	/* The offset this element is on the base pointer.  */
+	int offset_from_bp;
+
+	struct stack_frame_data data;
+};
+
+/* Change according to target architecture.
+   32-bit = 4 bytes.
+   64-bit = 8 bytes.  */
+#define STACK_PUSH_SIZE 4
+
+enum
+{
+	STACK_FRAME_ELEMENT_TYPE_LOCAL_VARIABLE,
+	STACK_FRAME_ELEMENT_TYPE_SAVED_REGISTER,
+	STACK_FRAME_ELEMENT_TYPE_SAVED_BP,
+	STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE,
+	STACK_FRAME_ELEMENT_TYPE_UNKNOWN
+};
+
+enum
+{
+	STACK_FRAME_ELEMENT_FLAG_IS_PUSHED_ADDRESS = 0b00000001,
+	STACK_FRAME_ELEMENT_FLAG_ELEMENT_NOT_FOUND = 0b00000010,
+	STACK_FRAME_ELEMENT_FLAG_IS_NUMERICAL 	   = 0b00000100,
+	STACK_FRAME_ELEMENT_FLAG_HAS_DATATYPE      = 0b00001000
+};
+
+void
+stack_frame_pop (struct node* func_node);
+struct stack_frame_element*
+stackframe_back (struct node* func_node);
+struct stack_frame_element*
+stack_frame_back_expect (struct node* func_node, int expecting_type,
+						 const char* expecting_name);
+void
+stack_frame_pop_expecting (struct node* func_node, int expecting_type,
+                                const char* expecting_name);
+void
+stack_frame_peek_start (struct node* func_node);
+struct stack_frame_element*
+stack_frame_peek (struct node* func_node);
+void
+stack_frame_push (struct node* func_ode,
+                       struct stack_frame_element* element);
+void
+stackframe_sub (struct node* func_node, int type,
+                const char* name, size_t amount);
+void
+stackframe_add (struct node* func_node, int type,
+                const char* name, size_t amount);
+void
+stack_frame_assert_empty (struct node* func_node);
+
 struct node
 {
 	int type;
@@ -505,6 +577,13 @@ struct node
 
 			/* Pointer to the function body node, NULL if this is a function prototype. */
 			struct node* body_n;
+
+			/* Keep track of the whole stack frame for each function.  */
+			struct stack_frame
+			{
+				/* A vector of stack_frame_element.  */
+				struct vector* elements;
+			} frame;
 
 			/* The stack size for all variables inside this function. */
 			size_t stack_size;

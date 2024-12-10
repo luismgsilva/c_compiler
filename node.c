@@ -220,7 +220,7 @@ void
 make_function_node (struct datatype* ret_type, const char* name,
                     struct vector* arguments, struct node* body_node)
 {
-    node_create (&(struct node)
+    struct node* function_node = node_create (&(struct node)
     {
         .type=NODE_TYPE_FUNCTION,
         .func.name=name,
@@ -230,7 +230,8 @@ make_function_node (struct datatype* ret_type, const char* name,
         .func.args.stack_addition=DATA_SIZE_DDWORD
     });
 
-    #warning "Dont forget to build the frame elementss"
+    function_node->func.frame.elements = \
+                vector_create (sizeof (struct stack_frame_element));
 }
 
 void
