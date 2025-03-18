@@ -386,6 +386,53 @@ struct parsed_switch_case
 	int index;
 };
 
+struct stack_frame_data
+{
+	/* The datatype that was pushed to the stack.  */
+	struct datatype dtype;
+};
+
+struct stack_frame_element
+{
+	/* Stack frame element flags.  */
+	int flags;
+
+	/* The type of the frame element. (e.g., saved base pointer,
+	   result value).  */
+	int type;
+
+	/* The name that describes the frame element, not a variable name.
+	   I.e result_value.  */
+	const char* name;
+
+	/* The offset this element is on the base pointer.  */
+	int offset_from_bp;
+
+	struct stack_frame_data data;
+};
+
+/* Change according to target architecture.
+   32-bit = 4 bytes.
+   64-bit = 8 bytes.  */
+#define STACK_PUSH_SIZE 4
+
+enum
+{
+	STACK_FRAME_ELEMENT_TYPE_LOCAL_VARIABLE,
+	STACK_FRAME_ELEMENT_TYPE_SAVED_REGISTER,
+	STACK_FRAME_ELEMENT_TYPE_SAVED_BP,
+	STACK_FRAME_ELEMENT_TYPE_PUSHED_VALUE,
+	STACK_FRAME_ELEMENT_TYPE_UNKNOWN
+};
+
+enum
+{
+	STACK_FRAME_ELEMENT_FLAG_IS_PUSHED_ADDRESS = 0b00000001,
+	STACK_FRAME_ELEMENT_FLAG_ELEMENT_NOT_FOUND = 0b00000010,
+	STACK_FRAME_ELEMENT_FLAG_IS_NUMERICAL 	   = 0b00000100,
+	STACK_FRAME_ELEMENT_FLAG_HAS_DATATYPE      = 0b00001000
+};
+
 struct node
 {
 	int type;
@@ -505,6 +552,13 @@ struct node
 
 			/* Pointer to the function body node, NULL if this is a function prototype. */
 			struct node* body_n;
+
+			/* Keep track of the whole stack frame for each function.  */
+			struct stack_frame
+			{
+				/* A vector of stack_frame_element.  */
+				struct vector* elements;
+			} frame;
 
 			/* The stack size for all variables inside this function. */
 			size_t stack_size;
