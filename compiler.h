@@ -433,6 +433,32 @@ enum
 	STACK_FRAME_ELEMENT_FLAG_HAS_DATATYPE      = 0b00001000
 };
 
+void
+stack_frame_pop (struct node* func_node);
+struct stack_frame_element*
+stackframe_back (struct node* func_node);
+struct stack_frame_element*
+stack_frame_back_expect (struct node* func_node, int expecting_type,
+						 const char* expecting_name);
+void
+stack_frame_pop_expecting (struct node* func_node, int expecting_type,
+                           const char* expecting_name);
+void
+stack_frame_peek_start (struct node* func_node);
+struct stack_frame_element*
+stack_frame_peek (struct node* func_node);
+void
+stack_frame_push (struct node* func_ode,
+                  struct stack_frame_element* element);
+void
+stackframe_sub (struct node* func_node, int type,
+                const char* name, size_t amount);
+void
+stackframe_add (struct node* func_node, int type,
+                const char* name, size_t amount);
+void
+stack_frame_assert_empty (struct node* func_node);
+
 struct node
 {
 	int type;
